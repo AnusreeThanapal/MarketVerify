@@ -1,0 +1,69 @@
+# ==========================================
+# MarketVerify — Strict Security .gitignore
+# ==========================================
+
+# Local Demo Credentials & Reference Docs (NEVER COMMIT)
+DEMO_CREDENTIALS.local.md
+*.local.md
+DEMO_CREDENTIALS.md
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*.local
+*.env
+
+# Local Databases & Vector Store Volumes
+*.db
+*.sqlite
+*.sqlite3
+marketverify.db
+test.db
+qdrant_data_local/
+qdrant_data/
+pgdata/
+data/
+
+# Logs and Debug Captures
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python & Testing Artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Node & Frontend Build Artifacts
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+build/
+.vite/
+frontend/.vite/
+
+# Operating System & IDE Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo

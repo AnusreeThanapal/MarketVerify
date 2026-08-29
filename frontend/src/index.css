@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --portal-bg: #F7F8FA;
+  --portal-card: #FFFFFF;
+  --portal-border: #D8DEE8;
+  --portal-navy: #0F2744;
+  --portal-navy-light: #1B3A6B;
+  --portal-saffron: #D97706;
+  --portal-green: #15803D;
+  --portal-text: #1E293B;
+  --portal-text-muted: #64748B;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #F7F8FA;
+  color: #1E293B;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Institutional Tricolor Hairline Accent */
+.tricolor-accent {
+  background: linear-gradient(90deg, #E06A14 0%, #E06A14 45%, #FFFFFF 45%, #FFFFFF 55%, #137547 55%, #137547 100%);
+  height: 3px;
+  width: 100%;
+}
+
+/* Subtle Zebra Striping for Official Register Tables */
+.table-register tbody tr:nth-child(even) {
+  background-color: #F8FAFC;
+}
+
+.table-register tbody tr:hover {
+  background-color: #F1F5F9;
+}
+
+/* Custom Scrollbar for Official Reports */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Focus styling for WCAG AA compliance */
+a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid #1B3A6B;
+  outline-offset: 2px;
+}
