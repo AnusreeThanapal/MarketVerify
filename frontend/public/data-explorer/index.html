@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MarketVerify - Real-Time Live Data Explorer & Institutional Dataset Tables</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy-900: #0a192f;
+      --navy-800: #0F2744;
+      --navy-700: #1B3A6B;
+      --navy-600: #2563EB;
+      --navy-500: #3B82F6;
+      --slate-50: #F8FAFC;
+      --slate-100: #F1F5F9;
+      --slate-200: #E2E8F0;
+      --slate-300: #CBD5E1;
+      --slate-500: #64748B;
+      --slate-700: #334155;
+      --slate-800: #1E293B;
+      --slate-900: #0F172A;
+      --emerald-600: #059669;
+      --emerald-500: #10B981;
+      --emerald-50: #ECFDF5;
+      --amber-600: #D97706;
+      --amber-50: #FFFBEB;
+      --rose-600: #E11D48;
+      --rose-50: #FFF1F2;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--slate-50);
+      color: var(--slate-900);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-800) 50%, var(--navy-700) 100%);
+      color: white;
+      padding: 1.15rem 2rem;
+      border-bottom: 2px solid #2563eb33;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.25);
+    }
+
+    .header-inner {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+    }
+
+    .badge-institutional {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(147, 197, 253, 0.35);
+      color: #93C5FD;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .live-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #6EE7B7;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10B981;
+      box-shadow: 0 0 8px #10B981;
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .subtitle {
+      color: #94A3B8;
+      font-size: 0.78rem;
+      margin-top: 0.15rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .quick-links {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    .btn {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.45rem 0.85rem;
+      border-radius: 6px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #F8FAFC;
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    .btn-primary {
+      background: var(--navy-500);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--navy-600);
+    }
+
+    .btn-sync {
+      background: #059669;
+      color: white;
+    }
+
+    .btn-sync:hover {
+      background: #047857;
+    }
+
+    main {
+      max-width: 1600px;
+      margin: 1.5rem auto;
+      padding: 0 1.5rem;
+      flex: 1;
+      width: 100%;
+    }
+
+    /* Stats bar */
+    .dataset-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .stat-card:hover, .stat-card.active {
+      border-color: var(--navy-500);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+    }
+
+    .stat-card .label {
+      font-size: 0.72rem;
+      color: var(--slate-500);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .stat-card .count {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--navy-800);
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 0.2rem;
+    }
+
+    .stat-card .desc {
+      font-size: 0.72rem;
+      color: var(--slate-500);
+      margin-top: 0.25rem;
+    }
+
+    .badge-live-pulse {
+      position: absolute;
+      top: 0.85rem;
+      right: 0.85rem;
+      font-size: 0.65rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 0.15rem 0.45rem;
+      background: #ECFDF5;
+      color: #059669;
+      border: 1px solid #A7F3D0;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    /* Tab navigation */
+    .controls-bar {
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .tabs-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .tab-btn {
+      padding: 0.5rem 0.9rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--slate-700);
+      background: var(--slate-100);
+      border: 1px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .tab-btn:hover {
+      background: var(--slate-200);
+    }
+
+    .tab-btn.active {
+      background: var(--navy-800);
+      color: white;
+    }
+
+    .tab-btn .badge-pill {
+      background: rgba(0, 0, 0, 0.15);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 9999px;
+    }
+
+    .tab-btn.active .badge-pill {
+      background: rgba(255, 255, 255, 0.22);
+      color: white;
+    }
+
+    .right-tools {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .auto-sync-box {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      color: var(--slate-700);
+      font-family: 'JetBrains Mono', monospace;
+      background: #F8FAFC;
+      border: 1px solid var(--slate-300);
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 280px;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.82rem;
+      border: 1px solid var(--slate-300);
+      border-radius: 6px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .search-box:focus {
+      border-color: var(--navy-500);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    /* Table Container */
+    .table-container {
+      background: white;
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      overflow-x: auto;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.82rem;
+    }
+
+    thead {
+      background: var(--slate-100);
+      border-bottom: 2px solid var(--slate-200);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    th {
+      padding: 0.75rem 1rem;
+      font-weight: 700;
+      color: var(--slate-700);
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--slate-200);
+      transition: background 0.1s ease;
+    }
+
+    tbody tr:hover {
+      background: #F8FAFC;
+    }
+
+    tbody tr.row-new {
+      animation: highlightRow 3s ease;
+    }
+
+    @keyframes highlightRow {
+      0% { background: #DCFCE7; }
+      100% { background: transparent; }
+    }
+
+    td {
+      padding: 0.75rem 1rem;
+      color: var(--slate-800);
+      vertical-align: top;
+      max-width: 450px;
+      word-wrap: break-word;
+      line-height: 1.45;
+    }
+
+    .code-cell {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--navy-700);
+      background: #F1F5F9;
+      padding: 0.2rem 0.45rem;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase;
+    }
+
+    .badge-true, .badge-positive, .badge-corroborated, .badge-completed, .badge-corroborated_official {
+      background: var(--emerald-50);
+      color: var(--emerald-600);
+      border: 1px solid #A7F3D0;
+    }
+
+    .badge-false, .badge-negative, .badge-debunked, .badge-contradicted, .badge-failed, .badge-contradicted_official {
+      background: var(--rose-50);
+      color: var(--rose-600);
+      border: 1px solid #FECDD3;
+    }
+
+    .badge-inconclusive, .badge-neutral, .badge-processing, .badge-no_evidence_found {
+      background: var(--amber-50);
+      color: var(--amber-600);
+      border: 1px solid #FDE68A;
+    }
+
+    .truncate-text {
+      max-width: 420px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .link-doc {
+      color: var(--navy-500);
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .link-doc:hover {
+      text-decoration: underline;
+    }
+
+    /* Modal / Inspector */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1.5rem;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: white;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 800px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--slate-300);
+    }
+
+    .modal-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--slate-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--slate-50);
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
+
+    .modal-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--navy-800);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.25rem;
+      cursor: pointer;
+      color: var(--slate-500);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .close-btn:hover {
+      background: var(--slate-200);
+      color: var(--slate-900);
+    }
+
+    .modal-body {
+      padding: 1.25rem;
+      overflow-y: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      background: #0B1120;
+      color: #E2E8F0;
+      line-height: 1.5;
+    }
+
+    .meta-footer {
+      margin-top: 1.5rem;
+      padding: 1rem 0 2rem;
+      font-size: 0.75rem;
+      color: var(--slate-500);
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="brand-group">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: #60A5FA;">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>
+        <div>
+          <h1>MarketVerify Raw Data Explorer <span class="badge-institutional">Institutional Audit</span></h1>
+          <div class="subtitle">Complete tabular dump of vector knowledge bases, SEBI LODR disclosures & live surveillance ledger</div>
+        </div>
+      </div>
+      <div class="quick-links">
+        <div class="live-status-pill">
+          <div class="pulse-dot"></div>
+          <span id="api-status-text">Backend Connected (:8005)</span>
+        </div>
+        <button onclick="syncLiveClaims()" class="btn btn-sync" title="Fetch latest submissions from live database">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+          Sync Live DB
+        </button>
+        <button onclick="downloadActiveDataset()" class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          Export Active JSON
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Dataset Summary Cards -->
+    <div class="dataset-stats">
+      <div class="stat-card" onclick="switchTab('claims')" id="card-claims">
+        <span class="badge-live-pulse">LIVE SYNC</span>
+        <div class="label">Verified Claims (Live SQLite)</div>
+        <div class="count" id="count-claims">11</div>
+        <div class="desc">Real-time processed claims & verification verdicts</div>
+      </div>
+      <div class="stat-card" onclick="switchTab('filings')" id="card-filings">
+        <div class="label">SEBI LODR Filings (Qdrant)</div>
+        <div class="count" id="count-filings">18</div>
+        <div class="desc">BSE / NSE corporate disclosures & announcements</div>
+      </div>
+      <div class="stat-card" onclick="switchTab('trust_tier')" id="card-trust_tier">
+        <div class="label">Trust-Tier History (Qdrant)</div>
+        <div class="count" id="count-trust_tier">22</div>
+        <div class="desc">Historical leak channel accuracy & lag records</div>
+      </div>
+      <div class="stat-card" onclick="switchTab('sentiment')" id="card-sentiment">
+        <div class="label">Sentiment Corpus (Qdrant)</div>
+        <div class="count" id="count-sentiment">15</div>
+        <div class="desc">Multi-lingual market tone & lead-lag patterns</div>
+      </div>
+      <div class="stat-card" onclick="switchTab('users')" id="card-users">
+        <div class="label">Authorized Roles (SQLite)</div>
+        <div class="count" id="count-users">4</div>
+        <div class="desc">RBAC accounts with designated tiers</div>
+      </div>
+    </div>
+
+    <!-- Controls Bar -->
+    <div class="controls-bar">
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('claims')" id="tab-btn-claims">
+          Claims & Verdicts <span class="badge-pill" id="pill-claims">11</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('filings')" id="tab-btn-filings">
+          SEBI Filings <span class="badge-pill" id="pill-filings">18</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('trust_tier')" id="tab-btn-trust_tier">
+          Trust-Tier Sources <span class="badge-pill" id="pill-trust_tier">22</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('sentiment')" id="tab-btn-sentiment">
+          Sentiment & Lead-Lag <span class="badge-pill" id="pill-sentiment">15</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('users')" id="tab-btn-users">
+          Users & RBAC <span class="badge-pill" id="pill-users">4</span>
+        </button>
+      </div>
+
+      <div class="right-tools">
+        <label class="auto-sync-box" title="Periodically queries the live backend every 3 seconds">
+          <input type="checkbox" id="auto-sync-checkbox" checked onchange="toggleAutoSync()">
+          <span>Auto-Sync Live DB (3s)</span>
+        </label>
+        <div class="filter-group">
+          <input 
+            type="text" 
+            id="search-input" 
+            class="search-box" 
+            placeholder="Filter rows by keyword, ticker, headline..."
+            oninput="filterRows()"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Table Viewport -->
+    <div class="table-container">
+      <table id="data-table">
+        <thead id="table-head"></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+
+    <div class="meta-footer">
+      Grounding System: MarketVerify • Real-Time Database Bridge: Connected to FastAPI (:8005) & SQLite • Collections: trust_tier_store, filing_store, sentiment_corpus
+    </div>
+  </main>
+
+  <!-- Detail JSON Inspector Modal -->
+  <div class="modal-backdrop" id="json-modal" onclick="closeModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title">Raw Document Record</div>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <pre class="modal-body"><code id="modal-content"></code></pre>
+    </div>
+  </div>
+
+  <script>
+    const datasets = {"trust_tier": [{"id": "trust-001", "source_handle": "@dalalstreetinsider", "source_name": "Dalal Street Insider", "past_claim_text": "Reliance Retail is set to launch a new luxury beauty vertical across top 10 metro cities.", "ticker": "RELIANCE", "was_accurate": true, "lag_hours": 48, "category": "expansion", "outcome_summary": "Confirmed by exchange disclosure 2 days later.", "outcome_date": "2024-03-15T10:30:00Z"}, {"id": "trust-002", "source_handle": "@dalalstreetinsider", "source_name": "Dalal Street Insider", "past_claim_text": "Tata Steel board to approve 1500cr capex for green hydrogen pilot plant at Kalinganagar.", "ticker": "TATASTEEL", "was_accurate": true, "lag_hours": 24, "category": "capex", "outcome_summary": "Board meeting outcome filed on NSE confirmed hydrogen facility capex.", "outcome_date": "2024-04-10T14:15:00Z"}, {"id": "trust-003", "source_handle": "@dalalstreetinsider", "source_name": "Dalal Street Insider", "past_claim_text": "Infosys acquiring European cloud security consulting firm for $120M.", "ticker": "INFY", "was_accurate": true, "lag_hours": 72, "category": "m&a", "outcome_summary": "Press release issued confirming German cloud consultancy acquisition.", "outcome_date": "2024-05-22T08:00:00Z"}, {"id": "trust-004", "source_handle": "@dalalstreetinsider", "source_name": "Dalal Street Insider", "past_claim_text": "HDFC Bank CEO to unexpectedly resign ahead of Q2 results.", "ticker": "HDFCBANK", "was_accurate": false, "lag_hours": 6, "category": "management", "outcome_summary": "HDFC Bank issued immediate BSE clarification refuting rumor as baseless.", "outcome_date": "2024-06-05T12:00:00Z"}, {"id": "trust-005", "source_handle": "@mumbai_trader_pro", "source_name": "Mumbai Trader Pro", "past_claim_text": "Zomato introducing 15% platform fee hike across Tier-1 cities starting next Monday.", "ticker": "ZOMATO", "was_accurate": true, "lag_hours": 96, "category": "pricing", "outcome_summary": "Zomato revised platform fee officially rolled out on app as reported.", "outcome_date": "2024-02-18T18:00:00Z"}, {"id": "trust-006", "source_handle": "@mumbai_trader_pro", "source_name": "Mumbai Trader Pro", "past_claim_text": "Adani Enterprises wins $2B airport modernization tender in Southeast Asia.", "ticker": "ADANIENT", "was_accurate": false, "lag_hours": 12, "category": "contracts", "outcome_summary": "Company clarified no such bid was placed; unverified market chatter.", "outcome_date": "2024-03-01T09:00:00Z"}, {"id": "trust-007", "source_handle": "@mumbai_trader_pro", "source_name": "Mumbai Trader Pro", "past_claim_text": "Wipro CFO stepping down with immediate effect due to personal reasons.", "ticker": "WIPRO", "was_accurate": true, "lag_hours": 18, "category": "management", "outcome_summary": "SEBI Regulation 30 disclosure filed confirming CFO transition.", "outcome_date": "2024-04-19T17:45:00Z"}, {"id": "trust-008", "source_handle": "@pump_and_dump_scanner", "source_name": "Penny Stock Rocket", "past_claim_text": "ITC to demerge hotel and cigarette businesses into three separate listed entities by month end.", "ticker": "ITC", "was_accurate": false, "lag_hours": 240, "category": "demerger", "outcome_summary": "No such filing; misleading speculation aimed at inflating retail volume.", "outcome_date": "2024-01-12T11:00:00Z"}, {"id": "trust-009", "source_handle": "@pump_and_dump_scanner", "source_name": "Penny Stock Rocket", "past_claim_text": "Paytm receives full banking license approval from RBI unexpectedly.", "ticker": "PAYTM", "was_accurate": false, "lag_hours": 4, "category": "regulatory", "outcome_summary": "RBI circular contradicted claim directly; disciplinary restrictions remained in force.", "outcome_date": "2024-02-02T16:30:00Z"}, {"id": "trust-010", "source_handle": "@pump_and_dump_scanner", "source_name": "Penny Stock Rocket", "past_claim_text": "Tata Motors commercial vehicle division securing massive $5B Saudi electric bus deal.", "ticker": "TATAMOTORS", "was_accurate": false, "lag_hours": 120, "category": "contracts", "outcome_summary": "Disproved by exchange clarification from company secretariat.", "outcome_date": "2024-05-14T10:00:00Z"}, {"id": "trust-011", "source_handle": "@tamil_market_guru", "source_name": "Tamil Market Insight (பங்குச்சந்தை தகவல்கள்)", "past_claim_text": "ரிலையன்ஸ் ஜியோ புதிய AI கிளவுட் தரவு மையத்தை சென்னையில் ரூ. 2,000 கோடியில் அமைக்கிறது.", "ticker": "RELIANCE", "was_accurate": true, "lag_hours": 36, "category": "capex", "outcome_summary": "Reliance Jio announced Tamil Nadu data center MoU at Global Investors Meet.", "outcome_date": "2024-01-20T12:00:00Z"}, {"id": "trust-012", "source_handle": "@tamil_market_guru", "source_name": "Tamil Market Insight (பங்குச்சந்தை தகவல்கள்)", "past_claim_text": "டாடா ஸ்டீல் காலாண்டு முடிவுகளில் 1:10 பங்கு பிரிப்பு (Stock Split) அறிவிக்க உள்ளது.", "ticker": "TATASTEEL", "was_accurate": false, "lag_hours": 48, "category": "corporate_action", "outcome_summary": "Board outcome had no stock split on agenda; regular dividend declared.", "outcome_date": "2024-04-25T16:00:00Z"}, {"id": "trust-013", "source_handle": "@tamil_market_guru", "source_name": "Tamil Market Insight (பங்குச்சந்தை தகவல்கள்)", "past_claim_text": "இன்ஃபோசிஸ் புதிய 500 மில்லியன் டாலர் ஏஐ ஒப்பந்தத்தை ஜெர்மன் வங்கியிடமிருந்து பெற்றுள்ளது.", "ticker": "INFY", "was_accurate": true, "lag_hours": 12, "category": "contracts", "outcome_summary": "Infosys press release confirmed European financial services enterprise win.", "outcome_date": "2024-06-11T09:30:00Z"}, {"id": "trust-014", "source_handle": "@credible_analyst", "source_name": "Institutional Equities Desk", "past_claim_text": "TCS winning $1B mega multi-year transformation deal from UK insurance giant.", "ticker": "TCS", "was_accurate": true, "lag_hours": 8, "category": "contracts", "outcome_summary": "TCS regulatory filing confirmed $1B Aviva agreement extension.", "outcome_date": "2024-01-18T10:00:00Z"}, {"id": "trust-015", "source_handle": "@credible_analyst", "source_name": "Institutional Equities Desk", "past_claim_text": "Larsen & Toubro emerges as lowest bidder (L1) for bullet train underwater tunnel project.", "ticker": "LT", "was_accurate": true, "lag_hours": 14, "category": "tenders", "outcome_summary": "NHSRCL official announcement confirmed L&T lowest bidder status.", "outcome_date": "2024-03-05T15:00:00Z"}, {"id": "trust-016", "source_handle": "@credible_analyst", "source_name": "Institutional Equities Desk", "past_claim_text": "Sun Pharma receives US FDA Form 483 with 4 observations for Halol facility.", "ticker": "SUNPHARMA", "was_accurate": true, "lag_hours": 20, "category": "regulatory", "outcome_summary": "Company filed material disclosure detailing the FDA inspection outcome.", "outcome_date": "2024-05-30T18:00:00Z"}, {"id": "trust-017", "source_handle": "@fake_breakout_bot", "source_name": "Breakout Radar Bot", "past_claim_text": "State Bank of India planning 1:5 bonus share issue in upcoming AGM.", "ticker": "SBIN", "was_accurate": false, "lag_hours": 168, "category": "corporate_action", "outcome_summary": "SBI AGM notice contained no bonus resolution; repeated false claim.", "outcome_date": "2024-02-14T11:00:00Z"}, {"id": "trust-018", "source_handle": "@fake_breakout_bot", "source_name": "Breakout Radar Bot", "past_claim_text": "Maruti Suzuki cutting small car production by 50% due to sudden inventory glut.", "ticker": "MARUTI", "was_accurate": false, "lag_hours": 24, "category": "operations", "outcome_summary": "BSE clarification issued denying any unplanned plant shutdown or cuts.", "outcome_date": "2024-03-29T14:30:00Z"}, {"id": "trust-019", "source_handle": "@bse_nse_alerts", "source_name": "Exchange Dispatches", "past_claim_text": "Bajaj Finance securing central bank approval for payment aggregator subsidiary.", "ticker": "BAJFINANCE", "was_accurate": true, "lag_hours": 4, "category": "regulatory", "outcome_summary": "RBI in-principle authorization disclosed on exchange.", "outcome_date": "2024-04-03T11:45:00Z"}, {"id": "trust-020", "source_handle": "@street_whispers", "source_name": "Street Whispers", "past_claim_text": "Titan Company to acquire remaining 27% stake in CaratLane for Rs 4,600 crore.", "ticker": "TITAN", "was_accurate": true, "lag_hours": 40, "category": "m&a", "outcome_summary": "Titan regulatory filing confirmed execution of share purchase agreement.", "outcome_date": "2024-02-27T17:30:00Z"}, {"id": "trust-021", "source_handle": "@street_whispers", "source_name": "Street Whispers", "past_claim_text": "ICICI Bank board initiating early succession hunt for top executive post.", "ticker": "ICICIBANK", "was_accurate": false, "lag_hours": 8, "category": "management", "outcome_summary": "Bank firmly clarified MD & CEO tenure extended with RBI concurrence.", "outcome_date": "2024-05-08T13:00:00Z"}, {"id": "trust-022", "source_handle": "@bse_nse_alerts", "source_name": "Exchange Dispatches", "past_claim_text": "Mahindra & Mahindra investing Rs 10,000 crore in Pune EV manufacturing plant.", "ticker": "M&M", "was_accurate": true, "lag_hours": 16, "category": "capex", "outcome_summary": "State government industrial policy approval and exchange filing confirmed.", "outcome_date": "2024-06-15T15:30:00Z"}], "filings": [{"filing_id": "SEBI-REL-2024-001", "ticker": "RELIANCE", "company_name": "Reliance Industries Limited", "filing_type": "SEBI Reg 30 Disclosure - Corporate Action", "filing_date": "2024-06-18", "headline": "Reliance Retail Ventures executes agreement to acquire 40% strategic stake in Zepto quick-commerce", "content_chunk": "Pursuant to Regulation 30 of SEBI (LODR) Regulations 2015, Reliance Retail Ventures Limited (RRVL), a subsidiary of the Company, has executed definitive transaction documents for subscribing to compulsory convertible preference shares representing a 40% equity stake in Kiranakart Technologies Private Limited (Zepto) for an aggregate consideration of INR 4,200 Crores. The strategic investment will bolster rapid omnichannel grocery distribution.", "source_url": "https://www.bseindia.com/xml-data/corpfiling/AttachLive/SEBI-REL-2024-001.pdf"}, {"filing_id": "SEBI-REL-2024-002", "ticker": "RELIANCE", "company_name": "Reliance Industries Limited", "filing_type": "Clarification on Media Report", "filing_date": "2024-07-02", "headline": "Clarification on news item regarding immediate IPO listing of Jio Telecom within next 30 days", "content_chunk": "With reference to recent social media rumors and market chatter claiming an impending IPO listing of Reliance Jio Infocomm Limited within the next 30 days, we wish to clarify that there is no such proposal approved by the Board at this stage. The Company evaluates strategic options periodically and any material development will be disclosed under Regulation 30 in due course.", "source_url": "https://www.nseindia.com/corporate-announcements/RELIANCE-CLAR-2024-002.pdf"}, {"filing_id": "SEBI-REL-2024-003", "ticker": "RELIANCE", "company_name": "Reliance Industries Limited", "filing_type": "Press Release - Green Energy", "filing_date": "2024-01-20", "headline": "Reliance inks MoU with Government of Tamil Nadu for Rs 2000 Cr AI Data Center and Giga-factory", "content_chunk": "Reliance Industries Limited through its digital subsidiary announced a Memorandum of Understanding at the Global Investors Meet 2024 to invest Rs 2,000 Crores in setting up green-energy powered AI cloud data centers in Chennai, Tamil Nadu, creating over 3,000 direct technology jobs.", "source_url": "https://www.ril.com/investor-relations/press-releases/tn-ai-data-center.pdf"}, {"filing_id": "SEBI-TAT-2024-001", "ticker": "TATASTEEL", "company_name": "Tata Steel Limited", "filing_type": "Outcome of Board Meeting", "filing_date": "2024-04-10", "headline": "Board approves Rs 1500 Crore Capital Expenditure for Kalinganagar Hydrogen-Ready Blast Furnace", "content_chunk": "The Board of Directors of Tata Steel Limited at its meeting held today approved a phased capital outlay of Rs 1,500 Crores for installation of hydrogen injection systems and carbon capture infrastructure at the Kalinganagar plant, Odisha. The capex will be funded via internal cash accruals over FY25-FY26.", "source_url": "https://www.bseindia.com/xml-data/corpfiling/AttachLive/SEBI-TAT-2024-001.pdf"}, {"filing_id": "SEBI-TAT-2024-002", "ticker": "TATASTEEL", "company_name": "Tata Steel Limited", "filing_type": "Clarification on Rumor", "filing_date": "2024-04-26", "headline": "Clarification regarding rumors of 1:10 stock sub-division / split", "content_chunk": "We refer to speculative social media messages circulating regarding an alleged proposal for a 1:10 stock split of equity shares. We categorically confirm that no such agenda item was tabled or discussed. Shareholders are advised to rely strictly on official exchange filings.", "source_url": "https://www.nseindia.com/corporate-announcements/TATASTEEL-CLAR-002.pdf"}, {"filing_id": "SEBI-INFY-2024-001", "ticker": "INFY", "company_name": "Infosys Limited", "filing_type": "Material Event - Acquisition", "filing_date": "2024-05-22", "headline": "Infosys signs definitive agreement to acquire in-tech, leading European engineering R&D provider", "content_chunk": "Infosys (NSE: INFY) announced it has signed a definitive agreement to acquire in-tech, a German engineering R&D services provider in mobility and smart cloud software, for an enterprise value of approximately EUR 110 million ($120 million). The acquisition strengthens Infosys automotive engineering capabilities across Germany and Central Europe.", "source_url": "https://www.infosys.com/newsroom/press-releases/2024/intech-acquisition.pdf"}, {"filing_id": "SEBI-INFY-2024-002", "ticker": "INFY", "company_name": "Infosys Limited", "filing_type": "Client Deal Press Release", "filing_date": "2024-06-11", "headline": "Infosys enters into $500M multi-year strategic enterprise AI partnership with German financial institution", "content_chunk": "Infosys Topaz generative AI suite selected by prominent German commercial bank to overhaul legacy digital banking workflows and core lending infrastructure under a 5-year engagement valued at $500 million.", "source_url": "https://www.infosys.com/newsroom/press-releases/2024/german-bank-topaz-deal.pdf"}, {"filing_id": "SEBI-HDFC-2024-001", "ticker": "HDFCBANK", "company_name": "HDFC Bank Limited", "filing_type": "Exchange Clarification - Key Managerial Personnel", "filing_date": "2024-06-05", "headline": "Rebuttal of speculative market rumors regarding Managing Director & CEO resignation", "content_chunk": "HDFC Bank strongly refutes malicious and unsubstantiated rumors circulating on messaging apps regarding the purported resignation of our Managing Director & CEO, Mr. Sashidhar Jagdishan. The Bank confirms that the CEO continues to steer the institution and his tenure is valid through October 2026 as sanctioned by the Reserve Bank of India.", "source_url": "https://www.bseindia.com/xml-data/corpfiling/AttachLive/HDFC-CLAR-001.pdf"}, {"filing_id": "SEBI-HDFC-2024-002", "ticker": "HDFCBANK", "company_name": "HDFC Bank Limited", "filing_type": "Financial Results Disclosure", "filing_date": "2024-07-20", "headline": "Unaudited Financial Results (Standalone and Consolidated) for the quarter ended June 30 2024", "content_chunk": "HDFC Bank posted net profit of Rs 16,175 Crores for Q1 FY25, up 35.3% year-on-year following seamless operational merger integration with erstwhile parent HDFC Limited. Net interest margin stood at 3.47% on total assets.", "source_url": "https://www.bseindia.com/xml-data/corpfiling/AttachLive/HDFC-Q1-2025.pdf"}, {"filing_id": "SEBI-ZOM-2024-001", "ticker": "ZOMATO", "company_name": "Zomato Limited", "filing_type": "Business Update Disclosure", "filing_date": "2024-02-18", "headline": "Operational update regarding pilot platform fee optimization in key urban clusters", "content_chunk": "Zomato Limited notes adjustments to its take-rate model through selective platform fee increments of Rs 6-9 per delivery order in Tier-1 metropolitan markets to enhance unit economics across food delivery logistics while preserving order volume growth.", "source_url": "https://www.bseindia.com/xml-data/corpfiling/AttachLive/ZOM-UPDATE-001.pdf"}, {"filing_id": "SEBI-ZOM-2024-002", "ticker": "ZOMATO", "company_name": "Zomato Limited", "filing_type": "Acquisition Intimation", "filing_date": "2024-08-21", "headline": "Approval for acquisition of Paytm entertainment ticketing business for Rs 2048 Crores", "content_chunk": "The Board of Directors has approved the acquisition of Orbgen Technologies Pvt Ltd and Wasteland Entertainment Pvt Ltd (Paytm insider ticketing and entertainment business) for an all-cash enterprise value of Rs 2,048.4 Crores to expand District lifestyle app.", "source_url": "https://www.nseindia.com/corporate-announcements/ZOMATO-PAYTM-TICKETING.pdf"}, {"filing_id": "SEBI-ADANI-2024-001", "ticker": "ADANIENT", "company_name": "Adani Enterprises Limited", "filing_type": "Exchange Clarification", "filing_date": "2024-03-01", "headline": "Clarification on unconfirmed overseas airport concession bidding reports", "content_chunk": "With reference to media speculation regarding a $2 Billion Southeast Asian airport tender win, Adani Enterprises Limited clarifies that no formal consortium bid has been submitted or awarded in the referenced territory. Any material contract award is always promptly disclosed.", "source_url": "https://www.bseindia.com/xml-data/corpfiling/AttachLive/ADANI-CLAR-001.pdf"}, {"filing_id": "SEBI-WIPRO-2024-001", "ticker": "WIPRO", "company_name": "Wipro Limited", "filing_type": "SEBI Reg 30 - KMP Resignation", "filing_date": "2024-04-19", "headline": "CFO Resignation and succession appointment disclosure", "content_chunk": "Wipro Limited informs that Chief Financial Officer Mr. Jatin Dalal has tendered his resignation effective April 19, 2024 to pursue opportunities outside the organization. The Board has appointed Ms. Aparna Iyer as Chief Financial Officer.", "source_url": "https://www.bseindia.com/xml-data/corpfiling/AttachLive/WIPRO-CFO-RESIGN.pdf"}, {"filing_id": "SEBI-ITC-2024-001", "ticker": "ITC", "company_name": "ITC Limited", "filing_type": "Scheme of Arrangement - Hotels Demerger", "filing_date": "2024-06-06", "headline": "Shareholders approve Scheme of Demerger of Hotels Business into ITC Hotels Limited", "content_chunk": "At the NCLT-convened meeting of equity shareholders of ITC Limited, the Scheme of Arrangement for demerging the hotel business into a new wholly-owned subsidiary ITC Hotels Limited was approved with 99.6% majority. Cigarettes, FMCG and Paperboards remain integrated within ITC Limited; claims of further split are false.", "source_url": "https://www.bseindia.com/xml-data/corpfiling/AttachLive/ITC-HOTEL-DEMERGER.pdf"}, {"filing_id": "SEBI-PAYTM-2024-001", "ticker": "PAYTM", "company_name": "One97 Communications Limited", "filing_type": "Regulatory Disciplinary Update", "filing_date": "2024-02-02", "headline": "Update on RBI supervisory directives regarding Paytm Payments Bank Limited", "content_chunk": "In compliance with RBI directions under Section 35A of Banking Regulation Act, Paytm Payments Bank is prohibited from accepting new deposits, credit transactions, or wallet top-ups after March 15, 2024. Speculation claiming full regular commercial banking license approval is categorically incorrect.", "source_url": "https://www.bseindia.com/xml-data/corpfiling/AttachLive/PAYTM-RBI-DISCLOSURE.pdf"}, {"filing_id": "SEBI-TCS-2024-001", "ticker": "TCS", "company_name": "Tata Consultancy Services Limited", "filing_type": "Mega Contract Win Press Release", "filing_date": "2024-01-18", "headline": "TCS expands partnership with Aviva with landmark 15-year 1 Billion GBP contract extension", "content_chunk": "Tata Consultancy Services announced a major 15-year multi-million pound engagement with Aviva UK to deploy end-to-end cloud platform BaNCS across 5.5 million insurance policies, driving substantial operational agility.", "source_url": "https://www.tcs.com/news-room/press-releases/aviva-uk-partnership-expansion.pdf"}, {"filing_id": "SEBI-TITAN-2024-001", "ticker": "TITAN", "company_name": "Titan Company Limited", "filing_type": "SEBI Reg 30 - Strategic Acquisition", "filing_date": "2024-02-27", "headline": "Execution of Share Purchase Agreement for CaratLane stake acquisition", "content_chunk": "Titan Company Limited has signed definitive agreements to purchase the residual 27.18% equity shares in CaratLane Trading Private Limited from founder Mr. Mithun Sacheti and family for Rs 4,621 Crores, making CaratLane a 99.8% subsidiary.", "source_url": "https://www.titancompany.in/investors/filings/caratlane-acquisition-completion.pdf"}, {"filing_id": "SEBI-BAJFIN-2024-001", "ticker": "BAJFINANCE", "company_name": "Bajaj Finance Limited", "filing_type": "RBI Regulatory Authorization", "filing_date": "2024-04-03", "headline": "Receipt of In-Principle Authorization for Payment Aggregator business from RBI", "content_chunk": "Bajaj Financial Securities / Bajaj Finance informs that the Reserve Bank of India has accorded in-principle authorization to operate as an online payment aggregator under Section 7 of the Payment and Settlement Systems Act 2007.", "source_url": "https://www.bseindia.com/xml-data/corpfiling/AttachLive/BAJFIN-PAYMENT-AGGREGATOR.pdf"}], "sentiment": [{"id": "sent-001", "language": "en", "text_sample": "Reliance acquires 40% stake in Zepto quick commerce to counter Blinkit dominance in fast delivery grocery.", "sentiment_label": "POSITIVE", "tone": "expansionary_bullish", "lead_lag_behavior": "Lead signal: M&A rumors in high-growth quick-commerce typically prompt 2-4% pre-announcement rally followed by consolidation upon deal pricing clarity."}, {"id": "sent-002", "language": "en", "text_sample": "HDFC Bank CEO Sashidhar Jagdishan resigns amid executive rift and asset quality concerns.", "sentiment_label": "NEGATIVE", "tone": "panic_bearish", "lead_lag_behavior": "Lead signal: Sudden management exit rumors trigger immediate 3-5% price drop; historically rebounds swiftly if debunked within 24 hours."}, {"id": "sent-003", "language": "en", "text_sample": "Tata Steel green hydrogen project capex approved for Kalinganagar facility.", "sentiment_label": "POSITIVE", "tone": "strategic_bullish", "lead_lag_behavior": "Lag signal: Capex commitments generally exhibit delayed stock response, priced in over 2-3 quarters upon execution."}, {"id": "sent-004", "language": "en", "text_sample": "RBI imposes strict operational embargo on Paytm payments bank operations.", "sentiment_label": "NEGATIVE", "tone": "regulatory_bearish", "lead_lag_behavior": "Lead-lag coincident: Regulatory crackdown rumors translate into immediate multi-session lower circuits."}, {"id": "sent-005", "language": "en", "text_sample": "Infosys secures $500M enterprise AI deal with German commercial bank.", "sentiment_label": "POSITIVE", "tone": "growth_bullish", "lead_lag_behavior": "Lead signal: Large deal rumors build positive volume 1-2 days before market hours disclosure."}, {"id": "sent-006", "language": "en", "text_sample": "ITC hotel demerger ratio finalized; cigarette tax structure left untouched in budget.", "sentiment_label": "NEUTRAL", "tone": "in_line_neutral", "lead_lag_behavior": "Lag signal: Demerger pricing aligns with sum-of-parts calculations with minimal speculative spike."}, {"id": "sent-007", "language": "en", "text_sample": "Zomato hikes platform fee to Rs 9 per delivery to boost unit margins.", "sentiment_label": "POSITIVE", "tone": "profitability_bullish", "lead_lag_behavior": "Lead signal: Pricing power rumors support incremental margin expansion multiples."}, {"id": "sent-008", "language": "en", "text_sample": "Adani Enterprises foreign airport tender bid rejected by aviation ministry.", "sentiment_label": "NEGATIVE", "tone": "headwind_bearish", "lead_lag_behavior": "Lead signal: Unverified contract loss rumors create short-term volatility before official clarification."}, {"id": "sent-009", "language": "ta", "text_sample": "ரிலையன்ஸ் ஜியோ சென்னையில் ரூ. 2,000 கோடியில் பிரம்மாண்ட AI தரவு மையத்தை அமைக்கிறது.", "sentiment_label": "POSITIVE", "tone": "growth_bullish", "lead_lag_behavior": "Lead signal: Tamil regional capex leaks historically precede state investor summit MoUs by 2-3 days, generating local retail buying interest."}, {"id": "sent-010", "language": "ta", "text_sample": "டாடா ஸ்டீல் 1:10 பங்கு பிரிப்பு அறிவிக்க உள்ளதாக வெளியான வதந்தி நிறுவனம் திட்டவட்டமாக மறுப்பு.", "sentiment_label": "NEUTRAL", "tone": "rebuttal_neutral", "lead_lag_behavior": "Lead signal: Stock split rumors artificially pump trading volumes; sharp correction immediately upon denial."}, {"id": "sent-011", "language": "ta", "text_sample": "இன்ஃபோசிஸ் ஐரோப்பிய வங்கியிடமிருந்து ரூ. 4,100 கோடி மதிப்பிலான AI ஒப்பந்தத்தை வென்றுள்ளது.", "sentiment_label": "POSITIVE", "tone": "growth_bullish", "lead_lag_behavior": "Lead signal: IT mega-deal announcements support consistent upward channel over subsequent settlement cycle."}, {"id": "sent-012", "language": "ta", "text_sample": "ஹெச்டிஎஃப்சி வங்கி தலைமை அதிகாரி ராஜினாமா செய்ய இருப்பதாக பரவிய தகவல் பொய்யானது.", "sentiment_label": "NEGATIVE", "tone": "panic_containment", "lead_lag_behavior": "Lead signal: Leadership instability rumors cause momentary intraday discount before recovery."}, {"id": "sent-013", "language": "en", "text_sample": "Wipro appoints new CFO Aparna Iyer following Jatin Dalal departure.", "sentiment_label": "NEUTRAL", "tone": "transition_neutral", "lead_lag_behavior": "Lag signal: Planned executive transitions are absorbed steadily with negligible disruption."}, {"id": "sent-014", "language": "en", "text_sample": "Bajaj Finance receives RBI in-principle approval for payment aggregator operations.", "sentiment_label": "POSITIVE", "tone": "regulatory_bullish", "lead_lag_behavior": "Lead signal: New regulatory licensing unlocks fintech optionality, typically priced in within 24 hours."}, {"id": "sent-015", "language": "en", "text_sample": "Titan acquires remaining 27% stake in CaratLane for Rs 4,621 crore cash consideration.", "sentiment_label": "POSITIVE", "tone": "consolidation_bullish", "lead_lag_behavior": "Lead signal: High-growth subsidiary buyout strengthens market share; stock usually reacts favorably post-announcement."}], "claims": [{"id": "9d954726-5b41-4c1b-95d7-2cea076f8ecf", "raw_text": "Reliance Retail is acquiring 40% stake in Zepto quick commerce.", "language": "en", "ticker": "RELIANCE", "company_name": null, "source_handle": "@dalalstreetinsider", "submitted_at": "2026-08-29T07:24:57.184934Z", "status": "COMPLETED", "verdict_status": "UNVERIFIED_RUMOR", "confidence_score": 0.66}, {"id": "fa3086f9-5db9-4657-ac49-113a9a8cb971", "raw_text": "Reliance Retail executes agreement to acquire 40% strategic stake in Zepto quick-commerce for Rs 4200 Cr.", "language": "en", "ticker": "RELIANCE", "company_name": null, "source_handle": "@dalalstreetinsider", "submitted_at": "2026-08-29T07:33:12.034525Z", "status": "COMPLETED", "verdict_status": "CORROBORATED_OFFICIAL", "confidence_score": 0.8}, {"id": "15204826-bca0-401d-9744-0069794b318d", "raw_text": "HDFC Bank MD CEO Sashidhar Jagdishan to unexpectedly resign.", "language": "en", "ticker": "HDFCBANK", "company_name": null, "source_handle": "@dalalstreetinsider", "submitted_at": "2026-08-29T07:33:42.414226Z", "status": "COMPLETED", "verdict_status": "CORROBORATED_OFFICIAL", "confidence_score": 0.8}, {"id": "2ed5e813-1a63-46a7-95f2-1073e66ab9ea", "raw_text": "டாடா ஸ்டீல் காலாண்டு முடிவுகளில் 1:10 பங்கு பிரிப்பு (Stock Split) அறிவிக்க உள்ளதாக தகவல்.", "language": "ta", "ticker": "TATASTEEL", "company_name": null, "source_handle": "@tamil_market_guru", "submitted_at": "2026-08-29T07:48:08.131787Z", "status": "COMPLETED", "verdict_status": "NO_EVIDENCE_FOUND", "confidence_score": 0.5}, {"id": "5f58615b-efef-41af-bcb2-65871d3bb2d4", "raw_text": "Reliance Retail Ventures executes agreement to acquire 40% strategic stake in quick-commerce platform Zepto for Rs 4,200 Cr.", "language": "en", "ticker": "RELIANCE", "company_name": null, "source_handle": "@dalalstreetinsider", "submitted_at": "2026-08-29T10:04:05.870799Z", "status": "COMPLETED", "verdict_status": "CORROBORATED_OFFICIAL", "confidence_score": 0.8}, {"id": "e23a0c52-de1e-4d26-9097-61b2491802f8", "raw_text": "HDFC Bank MD and CEO Sashidhar Jagdishan to unexpectedly resign ahead of Q2 results due to board discord.", "language": "en", "ticker": "HDFCBANK", "company_name": null, "source_handle": "@dalalstreetinsider", "submitted_at": "2026-08-29T10:04:21.712154Z", "status": "COMPLETED", "verdict_status": "CORROBORATED_OFFICIAL", "confidence_score": 0.8}, {"id": "65ce8509-9452-4464-aa5e-80323587e234", "raw_text": "HDFC Bank MD and CEO Sashidhar Jagdishan to unexpectedly resign ahead of Q2 results due to board discord.", "language": "en", "ticker": "HDFCBANK", "company_name": null, "source_handle": "@dalalstreetinsider", "submitted_at": "2026-08-29T10:07:32.586599Z", "status": "COMPLETED", "verdict_status": "CORROBORATED_OFFICIAL", "confidence_score": 0.8}, {"id": "f474816c-7912-46ce-a2b2-3e066051b81d", "raw_text": "பாய்ட்எம் நிறுவனத்திற்கு ரிசர்வ் வங்கியிடமிருந்து முழு வங்கி உரிமம் மீண்டும் வழங்கப்பட்டதாக தகவல்.\"", "language": "ta", "ticker": "PAYTM", "company_name": null, "source_handle": "@dalalstreetinsider", "submitted_at": "2026-08-29T10:09:47.788547Z", "status": "COMPLETED", "verdict_status": "NO_EVIDENCE_FOUND", "confidence_score": 0.5}, {"id": "c6c0a766-70ab-4e6d-ac7b-e32716e9b2c9", "raw_text": "Reliance Retail Ventures executes agreement to acquire 40% strategic stake in quick-commerce platform Zepto for Rs 4,200 Cr.", "language": "en", "ticker": "RELIANCE", "company_name": null, "source_handle": "@dalalstreetinsider", "submitted_at": "2026-10-08T07:30:06.008498Z", "status": "COMPLETED", "verdict_status": "CORROBORATED_OFFICIAL", "confidence_score": 0.8}, {"id": "88738f4d-de32-4bbb-8935-9642eff70324", "raw_text": "Infosys announced a major 5-year cloud and generative AI partnership with BMW Group valued at 350M USD.", "language": "en", "ticker": "INFY", "company_name": null, "source_handle": "@insidertrader", "submitted_at": "2026-10-25T05:06:27.272208Z", "status": "COMPLETED", "verdict_status": "CORROBORATED_OFFICIAL", "confidence_score": 0.8}, {"id": "a12740d4-feb9-4272-9523-922ff113be29", "raw_text": "Paytm Payments Bank receives in-principle RBI nod to restore full operational banking services next month.", "language": "en", "ticker": "PAYTM", "company_name": null, "source_handle": "@fin_leaks_raw", "submitted_at": "2026-10-25T05:21:31.052906Z", "status": "COMPLETED", "verdict_status": "CORROBORATED_OFFICIAL", "confidence_score": 0.8}], "users": [{"id": "7e2b3938-f546-4c10-9cc4-c4434f85ebff", "email": "analyst.demo@marketverify.app", "full_name": "Surveillance Analyst (Market Intelligence)", "hashed_password": "●●●●●●●● (bcrypt secured)", "role": "ANALYST", "is_active": 1, "created_at": "2026-08-29 08:13:03.340735"}, {"id": "e2c0ae05-17d3-4ea3-89a3-e88eb3bebb78", "email": "compliance.demo@marketverify.app", "full_name": "Chief Compliance Officer (Surveillance Desk)", "hashed_password": "●●●●●●●● (bcrypt secured)", "role": "COMPLIANCE_OFFICER", "is_active": 1, "created_at": "2026-08-29 08:13:03.556919"}, {"id": "bc1584d6-1481-4f40-ba43-399d56c42cb4", "email": "admin.demo@marketverify.app", "full_name": "Platform Administrator (System Ops)", "hashed_password": "●●●●●●●● (bcrypt secured)", "role": "ADMINISTRATOR", "is_active": 1, "created_at": "2026-08-29 08:13:03.768071"}, {"id": "e535d34d-9d1c-4298-a752-b4fbf8384efb", "email": "auditor.demo@marketverify.app", "full_name": "External Regulatory Auditor (Read-Only Inspection)", "hashed_password": "●●●●●●●● (bcrypt secured)", "role": "AUDITOR", "is_active": 1, "created_at": "2026-08-29 08:13:03.975545"}]};
+    let activeTab = 'claims';
+    let autoSyncTimer = null;
+    let knownClaimIds = new Set(datasets.claims.map(c => c.id));
+
+    const columnsConfig = {
+      claims: [
+        { key: 'id', label: 'Claim ID', type: 'code' },
+        { key: 'ticker', label: 'Ticker', type: 'badge_ticker' },
+        { key: 'language', label: 'Lang', type: 'code' },
+        { key: 'source_handle', label: 'Source', type: 'code' },
+        { key: 'raw_text', label: 'Rumor / Claim Text', type: 'truncate' },
+        { key: 'verdict_status', label: 'Verdict', type: 'verdict_badge' },
+        { key: 'confidence_score', label: 'Confidence', type: 'confidence' },
+        { key: 'status', label: 'Status', type: 'status_badge' },
+        { key: 'submitted_at', label: 'Submitted At', type: 'date' },
+        { key: '_actions', label: 'Inspect', type: 'action' }
+      ],
+      filings: [
+        { key: 'filing_id', label: 'Filing ID', type: 'code' },
+        { key: 'ticker', label: 'Ticker', type: 'badge_ticker' },
+        { key: 'company_name', label: 'Company Name' },
+        { key: 'filing_type', label: 'Filing Type' },
+        { key: 'filing_date', label: 'Date', type: 'code' },
+        { key: 'headline', label: 'Headline / Regulatory Subject' },
+        { key: 'content_chunk', label: 'SEBI Disclosure Content Chunk', type: 'truncate' },
+        { key: 'source_url', label: 'Document Link', type: 'link' },
+        { key: '_actions', label: 'Inspect', type: 'action' }
+      ],
+      trust_tier: [
+        { key: 'id', label: 'Record ID', type: 'code' },
+        { key: 'source_handle', label: 'Source Handle', type: 'code' },
+        { key: 'source_name', label: 'Source Name' },
+        { key: 'ticker', label: 'Ticker', type: 'badge_ticker' },
+        { key: 'past_claim_text', label: 'Past Rumor / Claim', type: 'truncate' },
+        { key: 'was_accurate', label: 'Accurate?', type: 'boolean' },
+        { key: 'lag_hours', label: 'Lag (Hrs)', type: 'code' },
+        { key: 'category', label: 'Category' },
+        { key: 'outcome_summary', label: 'Audited Regulatory Outcome' },
+        { key: '_actions', label: 'Inspect', type: 'action' }
+      ],
+      sentiment: [
+        { key: 'id', label: 'Sample ID', type: 'code' },
+        { key: 'language', label: 'Lang', type: 'code' },
+        { key: 'text_sample', label: 'Market Chatter / Leak Snippet', type: 'truncate' },
+        { key: 'sentiment_label', label: 'Polarity', type: 'sentiment_badge' },
+        { key: 'tone', label: 'Tone Classification', type: 'code' },
+        { key: 'lead_lag_behavior', label: 'Lead-Lag Market Behavior' },
+        { key: '_actions', label: 'Inspect', type: 'action' }
+      ],
+      users: [
+        { key: 'id', label: 'User ID', type: 'code' },
+        { key: 'email', label: 'Email', type: 'code' },
+        { key: 'role', label: 'Institutional Role', type: 'code' },
+        { key: 'is_active', label: 'Active', type: 'boolean' },
+        { key: 'hashed_password', label: 'Password Protection', type: 'code' },
+        { key: '_actions', label: 'Inspect', type: 'action' }
+      ]
+    };
+
+    // Live Sync Function to poll FastAPI backend
+    async function syncLiveClaims() {
+      const apiStatusEl = document.getElementById('api-status-text');
+      try {
+        const response = await fetch('http://127.0.0.1:8005/api/v1/claims?page=1&page_size=100');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const result = await response.json();
+        const liveItems = result.items || [];
+
+        if (Array.isArray(liveItems) && liveItems.length > 0) {
+          let hasNew = false;
+          // Format live items into dataset structure
+          const formatted = liveItems.map(item => {
+            if (!knownClaimIds.has(item.id)) {
+              hasNew = true;
+              knownClaimIds.add(item.id);
+            }
+            return {
+              id: item.id,
+              raw_text: item.raw_text,
+              language: item.language,
+              ticker: item.ticker,
+              company_name: item.company_name,
+              source_handle: item.source_handle,
+              submitted_at: item.submitted_at,
+              status: item.status,
+              verdict_status: item.verdict_status,
+              confidence_score: item.confidence_score,
+              isNew: hasNew
+            };
+          });
+
+          datasets.claims = formatted;
+          document.getElementById('count-claims').innerText = formatted.length;
+          document.getElementById('pill-claims').innerText = formatted.length;
+
+          if (apiStatusEl) {
+            apiStatusEl.innerText = `Live Connected (${formatted.length} claims synced)`;
+            apiStatusEl.parentElement.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+          }
+
+          if (activeTab === 'claims') {
+            renderTable();
+          }
+        }
+      } catch (err) {
+        console.warn("Live API sync check:", err.message);
+        if (apiStatusEl) {
+          apiStatusEl.innerText = "API Standby / Reconnecting...";
+          apiStatusEl.parentElement.style.borderColor = 'rgba(234, 179, 8, 0.4)';
+        }
+      }
+    }
+
+    function toggleAutoSync() {
+      const enabled = document.getElementById('auto-sync-checkbox').checked;
+      if (enabled) {
+        if (!autoSyncTimer) {
+          autoSyncTimer = setInterval(syncLiveClaims, 3000);
+        }
+      } else {
+        if (autoSyncTimer) {
+          clearInterval(autoSyncTimer);
+          autoSyncTimer = null;
+        }
+      }
+    }
+
+    function switchTab(tabKey) {
+      activeTab = tabKey;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('tab-btn-' + tabKey);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+      const activeCard = document.getElementById('card-' + tabKey);
+      if (activeCard) activeCard.classList.add('active');
+
+      document.getElementById('search-input').value = '';
+      renderTable();
+    }
+
+    function renderTable() {
+      const config = columnsConfig[activeTab] || [];
+      const query = (document.getElementById('search-input').value || '').trim().toLowerCase();
+      let rows = datasets[activeTab] || [];
+
+      if (query) {
+        rows = rows.filter(row => {
+          return Object.values(row).some(v => String(v || '').toLowerCase().includes(query));
+        });
+      }
+
+      // Render Header
+      const thead = document.getElementById('table-head');
+      thead.innerHTML = `<tr>${config.map(c => `<th>${c.label}</th>`).join('')}</tr>`;
+
+      // Render Body
+      const tbody = document.getElementById('table-body');
+      if (rows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${config.length}" style="text-align: center; padding: 3rem; color: #64748B;">No records matched your search query.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rows.map((row, idx) => {
+        const rowClass = row.isNew ? 'row-new' : '';
+        return `<tr class="${rowClass}">${config.map(col => renderCell(row, col, idx)).join('')}</tr>`;
+      }).join('');
+    }
+
+    function renderCell(row, col, idx) {
+      if (col.type === 'action') {
+        return `<td><button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.72rem;" onclick="viewRawRow(${idx})">JSON</button></td>`;
+      }
+
+      const val = row[col.key];
+      if (val === undefined || val === null || val === '') {
+        return `<td style="color: #94A3B8;">—</td>`;
+      }
+
+      if (col.type === 'code') {
+        return `<td><span class="code-cell">${escapeHtml(String(val))}</span></td>`;
+      }
+
+      if (col.type === 'badge_ticker') {
+        return `<td><span class="code-cell" style="font-weight: 700; color: #1B3A6B; background: #DBEAFE; border: 1px solid #BFDBFE;">${escapeHtml(String(val))}</span></td>`;
+      }
+
+      if (col.type === 'boolean') {
+        const isTrue = Boolean(val);
+        return `<td><span class="badge badge-${isTrue ? 'true' : 'false'}">${isTrue ? 'YES' : 'NO'}</span></td>`;
+      }
+
+      if (col.type === 'status_badge') {
+        const s = String(val).toLowerCase();
+        return `<td><span class="badge badge-${s}">${escapeHtml(String(val))}</span></td>`;
+      }
+
+      if (col.type === 'verdict_badge') {
+        const s = String(val).toLowerCase();
+        let cls = 'neutral';
+        if (s.includes('corroborated')) cls = 'corroborated';
+        else if (s.includes('contradicted')) cls = 'contradicted';
+        else if (s.includes('no_evidence') || s.includes('inconclusive')) cls = 'inconclusive';
+        return `<td><span class="badge badge-${cls}">${escapeHtml(String(val).replace(/_/g, ' '))}</span></td>`;
+      }
+
+      if (col.type === 'confidence') {
+        const num = parseFloat(val);
+        const pct = isNaN(num) ? '' : Math.round(num * 100) + '%';
+        return `<td><span class="code-cell" style="font-weight: 700;">${pct || escapeHtml(String(val))}</span></td>`;
+      }
+
+      if (col.type === 'sentiment_badge') {
+        const s = String(val).toUpperCase();
+        let cls = 'neutral';
+        if (s.includes('POS')) cls = 'positive';
+        if (s.includes('NEG')) cls = 'negative';
+        return `<td><span class="badge badge-${cls}">${escapeHtml(s)}</span></td>`;
+      }
+
+      if (col.type === 'truncate') {
+        return `<td><div class="truncate-text" title="${escapeHtml(String(val))}">${escapeHtml(String(val))}</div></td>`;
+      }
+
+      if (col.type === 'date') {
+        let displayStr = String(val);
+        try {
+          let dateStr = String(val).trim();
+          if (!dateStr.endsWith('Z') && !dateStr.includes('+')) {
+            dateStr = dateStr.replace(' ', 'T') + 'Z';
+          }
+          const d = new Date(dateStr);
+          if (!isNaN(d.getTime())) {
+            displayStr = d.toLocaleString(undefined, {
+              year: 'numeric',
+              month: 'short',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: true
+            });
+          }
+        } catch (e) {
+          displayStr = String(val).replace('T', ' ').substring(0, 19);
+        }
+        return `<td><span class="code-cell" style="font-weight: 600;" title="ISO: ${escapeHtml(String(val))}">${escapeHtml(displayStr)}</span></td>`;
+      }
+
+      if (col.type === 'link') {
+        return `<td><a href="${val}" target="_blank" rel="noopener noreferrer" class="link-doc">PDF / Filing <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg></a></td>`;
+      }
+
+      return `<td>${escapeHtml(String(val))}</td>`;
+    }
+
+    function filterRows() {
+      renderTable();
+    }
+
+    function viewRawRow(idx) {
+      const query = (document.getElementById('search-input').value || '').trim().toLowerCase();
+      let rows = datasets[activeTab] || [];
+      if (query) {
+        rows = rows.filter(row => Object.values(row).some(v => String(v || '').toLowerCase().includes(query)));
+      }
+      const record = rows[idx];
+      if (!record) return;
+
+      document.getElementById('modal-title').innerText = `${activeTab.toUpperCase()} Record #${idx + 1}`;
+      document.getElementById('modal-content').innerText = JSON.stringify(record, null, 2);
+      document.getElementById('json-modal').classList.add('open');
+    }
+
+    function closeModal(e) {
+      document.getElementById('json-modal').classList.remove('open');
+    }
+
+    function downloadActiveDataset() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datasets[activeTab], null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `marketverify_${activeTab}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // Initial render and start auto-sync
+    switchTab('claims');
+    syncLiveClaims();
+    autoSyncTimer = setInterval(syncLiveClaims, 3000);
+  </script>
+</body>
+</html>

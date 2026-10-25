@@ -28,14 +28,13 @@ export type VerdictStatus =
   | 'CONTRADICTED_BY_FILING'
   | 'UNVERIFIED_RUMOR'
   | 'LIKELY_CREDIBLE'
-  | 'DEBUNKED_FALSEHOOD';
+  | 'DEBUNKED_FALSEHOOD'
+  | 'NO_EVIDENCE_FOUND';
 
 export type SentimentLabel =
-  | 'STRONGLY_POSITIVE'
   | 'POSITIVE'
   | 'NEUTRAL'
-  | 'NEGATIVE'
-  | 'STRONGLY_NEGATIVE';
+  | 'NEGATIVE';
 
 export interface CitationItem {
   doc_id: string;
@@ -79,6 +78,8 @@ export interface ClaimResponse {
   submitted_at: string;
   status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
   verdict?: VerdictResponse;
+  trace?: TraceEntry[];
+  // Legacy field kept for backward compat
   agent_run_log?: {
     id: string;
     execution_trace: TraceEntry[];
@@ -99,15 +100,21 @@ export interface ClaimSummary {
 }
 
 export interface TraceEntry {
-  agent_name: string;
-  step_number: number;
-  node_name: string;
+  // Backend fields (primary)
+  agent: string;
+  step_index: number;
   input_summary?: string;
   output_summary?: string;
-  latency_ms: number;
-  confidence_metric?: number;
+  retrieved_doc_ids?: string[];
+  retrieved_docs_preview?: Record<string, any>[];
   metadata?: Record<string, any>;
   timestamp: string;
+  // Alias fields for display (derived from above)
+  agent_name?: string;  // alias for agent
+  step_number?: number; // alias for step_index
+  node_name?: string;
+  latency_ms?: number;
+  confidence_metric?: number;
 }
 
 export interface SSETraceEvent {

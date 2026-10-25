@@ -408,20 +408,6 @@ export const WelcomeView: React.FC = () => {
           </div>
         </div>
       </section>
-
-      {/* Official Portal Footer */}
-      <footer className="bg-white py-5 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-[#64748B] font-mono gap-2">
-          <div>
-            MarketVerify • Multi-Agent Rumor Verification System for Indian Equities
-          </div>
-          <div className="flex items-center gap-3">
-            <span>SEBI LODR Grounded</span>
-            <span>•</span>
-            <span>FastAPI + LangGraph + Qdrant</span>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

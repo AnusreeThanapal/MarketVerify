@@ -12,7 +12,6 @@ import {
   Search,
   Scale,
   KeyRound,
-  FileCode,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { UserRole } from '../types/api';
@@ -284,14 +283,6 @@ export const LoginView: React.FC = () => {
                       </button>
                     );
                   })}
-                </div>
-              </div>
-
-              {/* Local Security Notice */}
-              <div className="mt-5 p-3 rounded-portal bg-[#F8FAFC] border border-[#CBD5E1] flex items-start gap-2 text-[#475569]">
-                <FileCode className="w-4 h-4 text-[#1B3A6B] shrink-0 mt-0.5" />
-                <div className="text-[11px] font-sans leading-relaxed">
-                  <strong className="text-[#0F2744] font-semibold font-mono">Local Demo Security Notice:</strong> Raw demo credentials are never shipped in frontend code. Passwords are generated in <code className="bg-slate-200 text-[#0F2744] px-1 py-0.5 rounded font-mono text-[10px]">DEMO_CREDENTIALS.local.md</code> upon running backend seed script.
                 </div>
               </div>
 

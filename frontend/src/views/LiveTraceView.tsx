@@ -36,8 +36,10 @@ export const LiveTraceView: React.FC = () => {
     getClaim(claimId)
       .then((c) => {
         setClaim(c);
-        if (c?.agent_run_log?.execution_trace && Array.isArray(c.agent_run_log.execution_trace)) {
-          setTraceSteps(c.agent_run_log.execution_trace);
+        // Prefer top-level trace array (primary backend field)
+        const traceData = c?.trace ?? c?.agent_run_log?.execution_trace;
+        if (traceData && Array.isArray(traceData)) {
+          setTraceSteps(traceData);
         }
         if (c?.verdict) {
           setVerdict(c.verdict);
@@ -57,7 +59,9 @@ export const LiveTraceView: React.FC = () => {
         if (!step) return;
         setTraceSteps((prev) => {
           const safePrev = Array.isArray(prev) ? prev : [];
-          const exists = safePrev.some((s) => s?.step_number === step.step_number);
+          // Deduplicate using step_index (primary field)
+          const stepId = step.step_index ?? step.step_number;
+          const exists = safePrev.some((s) => (s?.step_index ?? s?.step_number) === stepId);
           if (exists) return safePrev;
           return [...safePrev, step];
         });
@@ -224,8 +228,8 @@ export const LiveTraceView: React.FC = () => {
         </div>
 
         <div className="space-y-2.5">
-          {safeSteps.map((step) => (
-            <AgentNodeCard key={step.step_number} step={step} />
+          {safeSteps.map((step, idx) => (
+            <AgentNodeCard key={step.step_index ?? step.step_number ?? idx} step={step} />
           ))}
         </div>
       </div>

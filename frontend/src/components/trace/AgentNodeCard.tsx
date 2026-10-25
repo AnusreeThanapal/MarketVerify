@@ -32,7 +32,13 @@ export const AgentNodeCard: React.FC<AgentNodeCardProps> = ({
     return Award;
   };
 
-  const Icon = getAgentIcon(step?.agent_name);
+  // Support both backend field names (agent, step_index) and legacy aliases
+  const agentName = step?.agent ?? step?.agent_name ?? 'Agent Node';
+  const stepNum = step?.step_index ?? step?.step_number ?? 1;
+  const nodeName = step?.node_name ?? step?.agent ?? 'agent';
+  const latencyMs = step?.latency_ms ?? 0;
+
+  const Icon = getAgentIcon(agentName);
 
   return (
     <div className="bg-white rounded-portal border border-[#D8DEE8] shadow-portal-card overflow-hidden">
@@ -49,14 +55,14 @@ export const AgentNodeCard: React.FC<AgentNodeCardProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-mono font-bold uppercase px-1.5 py-0.5 rounded bg-white text-[#0F2744] border border-[#CBD5E1]">
-                STEP {step?.step_number || 1}
+                STEP {stepNum}
               </span>
               <h4 className="font-serif font-bold text-sm text-[#0F2744]">
-                {step?.agent_name || 'Agent Node'}
+                {agentName}
               </h4>
             </div>
             <p className="text-xs text-[#64748B] font-mono mt-0.5">
-              Node: <span className="text-[#0F2744] font-semibold">{step?.node_name || 'agent'}</span>
+              Node: <span className="text-[#0F2744] font-semibold">{nodeName}</span>
             </p>
           </div>
         </div>
@@ -64,7 +70,7 @@ export const AgentNodeCard: React.FC<AgentNodeCardProps> = ({
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 text-xs font-mono text-[#64748B]">
             <Clock className="w-3.5 h-3.5" />
-            <span>{step?.latency_ms || 0}ms</span>
+            <span>{latencyMs}ms</span>
           </div>
           <div className="flex items-center gap-1 text-xs font-mono font-bold text-[#0D8253]">
             <CheckCircle2 className="w-4 h-4" />

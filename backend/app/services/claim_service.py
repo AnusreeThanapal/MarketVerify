@@ -150,6 +150,10 @@ class ClaimService:
                 created_at=verdict.created_at,
             )
 
+            s_at = claim.submitted_at
+            if s_at and s_at.tzinfo is None:
+                s_at = s_at.replace(tzinfo=timezone.utc)
+
             return ClaimResponse(
                 id=claim.id,
                 raw_text=claim.raw_text,
@@ -158,7 +162,7 @@ class ClaimService:
                 ticker=claim.ticker,
                 company_name=claim.company_name,
                 source_handle=claim.source_handle,
-                submitted_at=claim.submitted_at,
+                submitted_at=s_at,
                 status=claim.status,
                 verdict=verdict_resp,
                 trace=trace_models,
@@ -337,6 +341,10 @@ class ClaimService:
                     )
                 )
 
+        s_at = claim.submitted_at
+        if s_at and s_at.tzinfo is None:
+            s_at = s_at.replace(tzinfo=timezone.utc)
+
         return ClaimResponse(
             id=claim.id,
             raw_text=claim.raw_text,
@@ -345,7 +353,7 @@ class ClaimService:
             ticker=claim.ticker,
             company_name=claim.company_name,
             source_handle=claim.source_handle,
-            submitted_at=claim.submitted_at,
+            submitted_at=s_at,
             status=claim.status,
             verdict=verdict_resp,
             trace=trace_models,
@@ -382,21 +390,25 @@ class ClaimService:
         results = await self.db.execute(query)
         claims = results.scalars().all()
 
-        items = [
-            ClaimSummary(
-                id=c.id,
-                raw_text=c.raw_text,
-                language=c.language,
-                ticker=c.ticker,
-                company_name=c.company_name,
-                source_handle=c.source_handle,
-                submitted_at=c.submitted_at,
-                status=c.status,
-                verdict_status=c.verdict.verdict_status if c.verdict else None,
-                confidence_score=c.verdict.confidence_score if c.verdict else None,
+        items = []
+        for c in claims:
+            s_at = c.submitted_at
+            if s_at and s_at.tzinfo is None:
+                s_at = s_at.replace(tzinfo=timezone.utc)
+            items.append(
+                ClaimSummary(
+                    id=c.id,
+                    raw_text=c.raw_text,
+                    language=c.language,
+                    ticker=c.ticker,
+                    company_name=c.company_name,
+                    source_handle=c.source_handle,
+                    submitted_at=s_at,
+                    status=c.status,
+                    verdict_status=c.verdict.verdict_status if c.verdict else None,
+                    confidence_score=c.verdict.confidence_score if c.verdict else None,
+                )
             )
-            for c in claims
-        ]
 
         return items, total
 
